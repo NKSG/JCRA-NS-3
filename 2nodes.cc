@@ -15,6 +15,20 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
+ * Author: Pengfei Cui
+ * Date: June 19, 2013
+ * Description: 
+ *		Step1: Verify the Friis channel model can set frequency
+ *		Config::SetDefault( ) can change the frequency
+ *
+ * Questions:
+ *		Could 2 frequency co-exist in one script?
+ *
+ *
+ *	In process
+ *
+ *		Support multiband simultaneous
+ *		Output data properly
  */
 
 #include "ns3/core-module.h"
@@ -147,7 +161,7 @@ Experiment::Run (const WifiHelper &wifi, const YansWifiPhyHelper &wifiPhy,
 
   ApplicationContainer apps = onoff.Install (c.Get (0));
   apps.Start (Seconds (0.5));
-  apps.Stop (Seconds (50.0));
+  apps.Stop (Seconds (10.0));
 
   Simulator::Schedule (Seconds (1.5), &Experiment::AdvancePosition, this, c.Get (1));
   Ptr<Socket> recvSink = SetupPacketReceive (c.Get (1));
@@ -177,7 +191,7 @@ int main (int argc, char *argv[])
 
   Experiment experiment;
   WifiHelper wifi = WifiHelper::Default ();
-  wifi.SetStandard (WIFI_PHY_STANDARD_80211a);
+//  wifi.SetStandard (WIFI_PHY_STANDARD_80211a);
   NqosWifiMacHelper wifiMac = NqosWifiMacHelper::Default ();
   YansWifiPhyHelper wifiPhy = YansWifiPhyHelper::Default ();
   YansWifiChannelHelper wifiChannel = YansWifiChannelHelper::Default ();
@@ -193,6 +207,23 @@ int main (int argc, char *argv[])
   dataset = experiment.Run (wifi, wifiPhy, wifiMac, wifiChannel);
   gnuplot.AddDataset (dataset);
 
+ 
+ 
+  Config::SetDefault ("ns3::FriisPropagationLossModel::Lambda",DoubleValue(0.125));
+  Config::SetDefault ("ns3::FriisPropagationLossModel::SystemLoss",DoubleValue(1.0));
+  
+  wifiChannel.AddPropagationLoss("ns3::FriisPropagationLossModel");
+
+  wifiMac.SetType ("ns3::AdhocWifiMac");
+  
+  std::cout << "New log from here bitcpfbitcpf " << std::endl; 
+  
+  NS_LOG_DEBUG ("New Wavelength");
+  experiment = Experiment ("48m");
+  wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager",
+                                "DataMode", StringValue ("OfdmRate54Mbps"));
+  dataset = experiment.Run (wifi, wifiPhy, wifiMac, wifiChannel);
+  gnuplot.AddDataset (dataset);
 
   std::ofstream asc;
   asc.open("testj18.txt");
