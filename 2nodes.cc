@@ -18,8 +18,12 @@
  * Author: Pengfei Cui
  * Date: June 19, 2013
  * Description: 
- *		Step1: Verify the Friis channel model can set frequency
- *		Config::SetDefault( ) can change the frequency
+ *	
+ *	Step1: Verify the Friis channel model can set frequency
+ *	
+ *	Notes:
+ *	Config::SetDefault( ) can change the frequency
+ *	YanswifiChannelHelper.AddPropagationLossModel could set the propagation loss model and config the frequency
  *
  * Questions:
  *		Could 2 frequency co-exist in one script?
@@ -179,8 +183,8 @@ int main (int argc, char *argv[])
   Config::SetDefault ("ns3::WifiRemoteStationManager::FragmentationThreshold", StringValue ("2200"));
   Config::SetDefault ("ns3::WifiRemoteStationManager::RtsCtsThreshold", StringValue ("2200"));
 
-  Config::SetDefault ("ns3::FriisPropagationLossModel::Lambda",DoubleValue(0.025));
-  Config::SetDefault ("ns3::FriisPropagationLossModel::SystemLoss",DoubleValue(1.0));
+//  Config::SetDefault ("ns3::FriisPropagationLossModel::Lambda",DoubleValue(0.025));
+//  Config::SetDefault ("ns3::FriisPropagationLossModel::SystemLoss",DoubleValue(1.0));
 
 
 
@@ -195,7 +199,9 @@ int main (int argc, char *argv[])
   NqosWifiMacHelper wifiMac = NqosWifiMacHelper::Default ();
   YansWifiPhyHelper wifiPhy = YansWifiPhyHelper::Default ();
   YansWifiChannelHelper wifiChannel = YansWifiChannelHelper::Default ();
-  wifiChannel.AddPropagationLoss("ns3::FriisPropagationLossModel");
+
+
+  wifiChannel.AddPropagationLoss("ns3::FriisPropagationLossModel","Lambda",DoubleValue(0.025));
   Gnuplot2dDataset dataset;
 
   wifiMac.SetType ("ns3::AdhocWifiMac");
@@ -205,10 +211,11 @@ int main (int argc, char *argv[])
   wifi.SetRemoteStationManager ("ns3::ConstantRateWifiManager",
                                 "DataMode", StringValue ("OfdmRate54Mbps"));
   dataset = experiment.Run (wifi, wifiPhy, wifiMac, wifiChannel);
+  std::cout << "New log from here bitcpfbitcpf " << std::endl; 
   gnuplot.AddDataset (dataset);
 
  
- 
+/* 
   Config::SetDefault ("ns3::FriisPropagationLossModel::Lambda",DoubleValue(0.125));
   Config::SetDefault ("ns3::FriisPropagationLossModel::SystemLoss",DoubleValue(1.0));
   
@@ -216,7 +223,6 @@ int main (int argc, char *argv[])
 
   wifiMac.SetType ("ns3::AdhocWifiMac");
   
-  std::cout << "New log from here bitcpfbitcpf " << std::endl; 
   
   NS_LOG_DEBUG ("New Wavelength");
   experiment = Experiment ("48m");
@@ -224,7 +230,7 @@ int main (int argc, char *argv[])
                                 "DataMode", StringValue ("OfdmRate54Mbps"));
   dataset = experiment.Run (wifi, wifiPhy, wifiMac, wifiChannel);
   gnuplot.AddDataset (dataset);
-
+*/
   std::ofstream asc;
   asc.open("testj18.txt");
   gnuplot.GenerateOutput (asc);
